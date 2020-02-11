@@ -16,6 +16,9 @@ classdef AnalyticalArray < ElobesMicArray
             obj.interpolationMethod = 'analytical';
             
         end
+        function[] = setSoundSpeed(obj,c)
+            obj.c = c;
+        end
         function[] = prepareData(obj,req_fs,varargin)
             % analytical array so we get to choose the sample rate
             obj.fs = req_fs;
