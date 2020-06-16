@@ -10,7 +10,7 @@ classdef ElobesMicArray < handle
         fs                              = []; % sample rate in Hertz
         availableInterpolationMethods   = {}; % defines the available interpolation methods
         poseAxes                        = []; % [x axis vec, y axis vec, z axis vec]
-        poseQuaternion                  = []; % quartenion represening the rotation required to get from the default orientation to the current one
+        poseQuaternion                  = []; % 4 x 1 quartenion represening the rotation required to get from the default orientation to the current one
         sensorCartesianPositions        = []; % M x 3 vector of cartesian coordinates
         arrayGeometry                   = struct('vertices',[],'faces',[]); % data for plotting the shape of the physical array
         t0                              = []; % index in samples of time zero (i.e. arrival time of direct path signal) at the origin
@@ -109,6 +109,30 @@ classdef ElobesMicArray < handle
             %obj.roll = roll;
             %obj.pitch = pitch;
             %obj.yaw = yaw;
+        end
+        function[] = setPoseQuaternion(obj,qr_wxyz)
+            if ~obj.supportsRotation
+                % Not all arrays support rotation. Nevertheless incuding
+                % this functionality in the base class is more convenient
+                % than re-implementing it
+                error('This microphone array does not support rotation')
+            end
+            if ~isequal(size(qr_wxyz), [4 1])
+                error('qr_wxyz must be a 4x1 vector')
+            end
+            if any(isnan(qr_wxyz))
+                error('qr_wxyz cannot contain NaNs')
+            end
+            obj.poseQuaternion = qr_wxyz;
+            % rotqrvec expects positions as column vectors
+            obj.poseAxes = rotqrvec(obj.poseQuaternion,eye(3)).';
+            obj.sensorCartesianPositions = rotqrvec(...
+                obj.poseQuaternion,...
+                obj.sensorCartesianPositionsDefault.').';
+            
+            % N.B. Don't rotate obj.arrayGeometry - potentially huge so
+            % only do it if we need to plot it
+            
         end
         function[rel_src_az,rel_src_inc] = planeWaveDoaWrtArray(obj,src_az,src_inc)
             % planeWaveDoaWrtArray finds the input source(s)' directions with respect 
