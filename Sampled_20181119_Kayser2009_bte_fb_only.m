@@ -51,8 +51,8 @@ classdef Sampled_20181119_Kayser2009_bte_fb_only < SampledArray & BinauralArray
         function[ir,src_pos,fs] = loadSampledData(obj)
             % TODO: Establish mechanism for defining paths to binary data
 %            wav_path = '~/local_databases/Impulse responses/Oldenburg/HRIR_database_wav/hrir/anechoic';
-            wav_path = '/Users/amoore1/data/_third_party/Kayser2009/HRIR_database_wav/hrir/anechoic';
-            
+%            wav_path = '/Users/amoore1/data/_third_party/Kayser2009/HRIR_database_wav/hrir/anechoic';
+            wav_path = '/Users/amoore1/data/Kayser2009/HRIR_database_wav/hrir/anechoic';
             
             % define grid in database co-ordinates
             az_deg_vec = [-180:5:175];
