@@ -1,4 +1,4 @@
-classdef Sampled_20181119_Kayser2009_bte_fb_only < SampledArray & BinauralArray
+classdef Sampled_20220225_Thiemann2019_bte_horiz < SampledArray & BinauralArray
     properties (SetAccess=protected)
         % properties from ElobesMicArray
         sensorCartesianPositionsDefault
@@ -19,7 +19,7 @@ classdef Sampled_20181119_Kayser2009_bte_fb_only < SampledArray & BinauralArray
         distance = [];
     end
     methods
-        function[obj] = Sampled_20181119_Kayser2009_bte_fb_only(distance)
+        function[obj] = Sampled_20220225_Thiemann2019_bte_horiz()
             
             % use superclass to create the object with input parameter
             obj = obj@SampledArray();
@@ -37,11 +37,7 @@ classdef Sampled_20181119_Kayser2009_bte_fb_only < SampledArray & BinauralArray
             obj.channelsLeft = [1;3];
             obj.channelsRight = [2;4];
             
-            % specific to this array, have a choice of measurment distances
-            if nargin==0
-                distance = 300;
-            end
-            obj.distance = distance/100; % in metres
+            obj.distance = 1.2; % in metres
             
         end
         function[rMin, rMax] = getValidSrcRadiusRange(obj)
@@ -49,35 +45,15 @@ classdef Sampled_20181119_Kayser2009_bte_fb_only < SampledArray & BinauralArray
             rMax = obj.distance;
         end
         function[ir,src_pos,fs] = loadSampledData(obj)
-            wav_path = obj.getDataDirectory();
+            rel_dir = obj.getDataDirectory()
+            dat_path = fullfile(rel_dir,'Thiemann2019_BKwHA_horiz_bandlimited_20220225_v02_half_deg_cropped.mat');
+            in_dat = load(dat_path);
             
-            % define grid in database co-ordinates
-            az_deg_vec = [-180:5:175];
-            el_deg_vec = [-10:10:20];
-            [el_deg_grid,az_deg_grid] = ndgrid(el_deg_vec,az_deg_vec);
-            el_deg = el_deg_grid(:);
-            az_deg = az_deg_grid(:);
-            
-            nPos = size(az_deg,1);
-            for ipos = nPos:-1:1
-                readpath = fullfile(wav_path,...
-                        sprintf('anechoic_distcm_%d_el_%d_az_%d.wav',...
-                        obj.distance*100,el_deg(ipos),az_deg(ipos)));
-                try
-                    [ir(:,:,ipos),fs] = readwav(readpath);
-                catch err
-                    fprintf('There was an error reading from %s\n',...
-                        readpath)
-                    fprintf('Check that the correct root directory was specifified.\n')
-                    fprintf('i.e. anechoic in Kayser2009/HRIR_database_wav/hrir/anechoic\n')
-                    error(err);
-                end
-            end
-            % remap and select the required channels
-            ir = ir(:,[3 4 7 8],:);
-            % define directions in cartesian coordinates according to
-            % elobes convention
-            src_pos = ElobesMicArray.mysph2cart(deg2rad(-az_deg),deg2rad(90-el_deg),obj.distance*ones(nPos,1));     
+            ir = in_dat.hrir;
+            src_pos = ElobesMicArray.mysph2cart(deg2rad(in_dat.az_deg),...
+                                 deg2rad(in_dat.inc_deg),...
+                                 obj.distance);
+            fs = in_dat.fs;
         end
     end
 

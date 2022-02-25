@@ -1,7 +1,7 @@
 classdef SampledArray < ElobesMicArray
     % SampledArray provides methods for interpolation for arrays whose 
-    % manifold has been sampled
-    % 
+    % manifold has been sampled and convenience functions for finding the
+    % data
     properties (SetAccess = protected)
         maxSensorRadius; % distance of the microphone furthest from origin
         H = [];          % [fix(nfft/2)+1 nSensors nSrcPos] matrix containing rfft of sampled data
@@ -23,6 +23,57 @@ classdef SampledArray < ElobesMicArray
             obj = obj@ElobesMicArray();
             
         end
+        
+        function[dir_path] = getDataDirectory(obj)
+            % returns the root directory required by the loadSampledData
+            % method
+            %
+            % Uses a json file to store the root directory for each
+            % SampledArray child class.  If the json file does not exist
+            % it will be created. The first time a class is used, the user
+            % will be prompted to locate the data.
+            this_dir = fileparts(mfilename());
+            config_file = fullfile(this_dir,'user_data_paths.json');
+            update_config_required = 0;
+            
+            if exist(config_file,'file')
+                config = jsondecode(fileread(config_file));
+            else
+                config = struct();
+                update_config_required = 1;
+            end
+            
+            class_name = class(obj);
+            if ~isfield(config,class_name)
+                update_config_required = 1;
+            else
+                dir_path = config.(class_name);
+                if ~exist(dir_path,'dir')
+                    warning('Saved path for %s doesn''t exist at %s',...
+                        class_name,dir_path')
+                    update_config_required = 1;
+                end
+            end
+            if update_config_required
+                dir_path = uigetdir([],sprintf('Choose the directory containing %s data',class_name));
+                if ~isempty(dir_path) && exist(dir_path,'dir')
+                    config.(class_name) = dir_path;
+                else
+                    error('No directory selected or directory doesn''t exist')
+                end
+                
+                fid = fopen(config_file,'w');
+                str = jsonencode(config);
+                fprintf(fid,str);
+                fclose(fid);
+            end
+        end
+
+                
+            
+        
+        
+        
         % preparing data depends on selected interpolation method
         % - none/nearest neighbour - nothing to be done to the data
         % - others to be added
@@ -42,7 +93,7 @@ classdef SampledArray < ElobesMicArray
             
             % can't deal with different distances yet
             srcRadius = sqrt(sum(srcPos.^2,2));           
-            if max(abs(srcRadius-mean(srcRadius))) > 20*eps
+            if max(abs(srcRadius-mean(srcRadius))) > 100*eps
                 error('Require fixed measurement radius, for now')
             end
             obj.srcUnitVec = bsxfun(@rdivide, srcPos, srcRadius);
