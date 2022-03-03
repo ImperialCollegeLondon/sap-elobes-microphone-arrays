@@ -12,7 +12,7 @@ classdef OpenSphereHearingAidArray4 < OpenSphereArray & BinauralArray
         function[obj] = OpenSphereHearingAidArray4()
             
             % use superclass to create the object with input parameter
-            obj = obj@RigidSphereArray(0.09);
+            obj = obj@OpenSphereArray(0.09);
             
             % override the default properties of the superclass
             obj.sensorCartesianPositionsDefault = predefinedSensorPositions();
