@@ -28,7 +28,9 @@ classdef RigidSphereArray < SphericalHarmonicSoundFieldArray
         % the SH mode strength and SH function at each sensor
         sphHarmFunc = [];
         sensorInverseSftMatrix = [];
-        
+        % define quadrature weights for analytic spherical harmonic
+        % transform
+        quad = [];
     end
     methods
         function[obj] = RigidSphereArray(radius)
