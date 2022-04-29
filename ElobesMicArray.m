@@ -77,7 +77,7 @@ classdef ElobesMicArray < handle
         function[] = setPoseRollPitchYawDegrees(obj,roll_deg,pitch_deg,yaw_deg)
             % Convenient helper function
             % Relies on subclass's implementation of setPoseRollPitchYaw
-            setPoseRollPitchYaw(obj,degtorad(roll_deg),degtorad(pitch_deg),degtorad(yaw_deg));
+            setPoseRollPitchYaw(obj,deg2rad(roll_deg),deg2rad(pitch_deg),deg2rad(yaw_deg));
         end
         function[] = setPoseRollPitchYaw(obj,roll,pitch,yaw)
             if ~obj.supportsRotation
